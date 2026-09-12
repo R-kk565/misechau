@@ -1,0 +1,173 @@
+@import "tailwindcss";
+
+/*
+ * 配色の反転に filter: invert() は使わない（写真まで反転するため）。
+ * CSS 変数を :root[data-mode='secret'] で差し替える。
+ */
+:root {
+  --bg: #f9f9f8;
+  --fg: #111216;
+  --muted: #6b6c74;
+  --line: #e2e1dd;
+  --card: #ffffff;
+  --accent: #cc86e2;
+  --shadow: 0 18px 40px -24px rgb(17 18 22 / 0.45);
+  --mode-transition: 0.55s;
+  color-scheme: light;
+}
+
+:root[data-mode="secret"] {
+  --bg: #111216;
+  --fg: #f4f3f0;
+  --muted: #9a9aa4;
+  --line: #2a2b33;
+  --card: #1a1b21;
+  --accent: #cc86e2;
+  --shadow: 0 18px 40px -24px rgb(0 0 0 / 0.75);
+  color-scheme: dark;
+}
+
+@theme {
+  --font-sans: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans",
+    "Yu Gothic", "Noto Sans JP", system-ui, sans-serif;
+  --font-serif: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", Georgia, serif;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-card: var(--card);
+  --color-accent: var(--accent);
+  --spacing-content: 844px;
+}
+
+html {
+  /* overflow-x: hidden は使わない。スクロールコンテナが生まれて
+     ファーストビューの position: sticky が効かなくなるため。 */
+  overflow-x: clip;
+  scroll-behavior: smooth;
+  scroll-padding-top: 50px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  overflow-x: clip;
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-feature-settings: "palt" 1;
+  letter-spacing: 0.04em;
+  transition:
+    background-color var(--mode-transition) ease,
+    color var(--mode-transition) ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+@utility content-shell {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 844px;
+  padding-inline: 20px;
+}
+
+/* マーキー: 同じ並びを 2 組置いて幅の 50% 動かす。
+   間隔は gap ではなく padding-right で持たせる（gap だと 2 組の合計が
+   1 組の 2 倍にならず、1 周ごとにずれるため）。 */
+@keyframes marquee-x {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-x var(--marquee-duration, 46s) linear infinite;
+  will-change: transform;
+}
+
+.marquee-viewport:hover .marquee-track,
+.marquee-viewport:focus-within .marquee-track {
+  animation-play-state: paused;
+}
+
+.marquee-mask {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 8%,
+    #000 92%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 8%,
+    #000 92%,
+    transparent 100%
+  );
+}
+
+/* GSAP で svh 単位を直接トゥイーンしない。CSS 変数を 0→1 で動かし calc() 側で組み立てる。 */
+@property --hero-p {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+/* 拡大縮小に CSS の zoom は使わない（当たり判定がずれる）。
+   transform: scale ＋負のマージンで、レイアウト上の占有も実寸に合わせる。 */
+.profile-scaler {
+  --profile-scale: 1;
+  width: 384px;
+  height: 297px;
+  transform: scale(var(--profile-scale));
+  transform-origin: top left;
+  margin-right: calc(384px * (var(--profile-scale) - 1));
+  margin-bottom: calc(297px * (var(--profile-scale) - 1));
+}
+
+@media (max-width: 423px) {
+  .profile-scaler {
+    --profile-scale: 0.86;
+  }
+}
+
+@media (max-width: 380px) {
+  .profile-scaler {
+    --profile-scale: 0.74;
+  }
+}
+
+@media (max-width: 340px) {
+  .profile-scaler {
+    --profile-scale: 0.68;
+  }
+}
